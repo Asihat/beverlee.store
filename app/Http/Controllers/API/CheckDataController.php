@@ -13,20 +13,21 @@ use Illuminate\Support\Facades\DB;
 class CheckDataController extends Controller
 {
     public function check(Request $request) {
-//        $packet_id = $request->packet_id;
+
+        //$packet_id = $request->packet_id;
         $packet_id_array = [$request->packet_id];
-        $order_id = $request->input('order_id');
+        $order_id = $request-> order_id;
+
         $goods = Goods::all();
         $total_products = [];
 
-        $payment = Payments::where('order_id',$order_id)->get();
-        if (count($payment) > 0){
+        $payment = Payments::where('order_id', $order_id)->get();
+        if (false){ // count($payment) > 0
             return 'false';
         }else{
             foreach ($packet_id_array as $packet_id){
                 if(Packet::find($packet_id)){
                     $products = DB::table('packet')
-
                         -> join('packet_product', 'packet.id', '=', 'packet_product.packet_id')
                         -> join('product', 'packet_product.product_id', '=', 'product.id')
                         -> where('packet.id', '=', $packet_id)
@@ -59,25 +60,40 @@ class CheckDataController extends Controller
                 $good -> save();
             }
 
-            $goodsAfter = Goods::all();
-
             $newPayment = new Payments();
 
             $newPayment -> data = implode(" ", $packet_id_array);
 
-            $newPayment -> status = 2; // Status wait 15 min
+            $newPayment -> status = 1; // Status wait 15 min
 
             $newPayment -> description  =  "Some description";
 
             $newPayment -> created_at = Carbon::now();
             $newPayment -> updated_at = Carbon::now();
+
             $newPayment -> order_id = $order_id;
+
             $newPayment -> save();
 
             return 'success';
         }
+    }
 
+    public function change(Request $request) {
 
-
+        $order_id = $request -> order_id;
+        $customer_id = $request -> customer_id;
+        if($order_id) {
+            $payment = Payments::where('order_id', $order_id)->get();
+            if (count($payment) > 0 and count($payment) < 2 ){ //
+                Payments::where('order_id', '=', $order_id)
+                    -> update(['status' => 2]);
+                return 'success';
+            } else {
+                return "There is some error with counts payment";
+            }
+        } else {
+            return "No order_id";
+        }
     }
 }

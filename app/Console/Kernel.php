@@ -4,7 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-
+use Carbon\Carbon;
 class Kernel extends ConsoleKernel
 {
     /**
@@ -26,6 +26,12 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
+//        $schedule->call(function () {
+//            DB::table('payments')
+//                -> where('updated_at', '<', Carbon::now()->)
+//                ->delete();
+//
+//        })->everyMinute()();
     }
 
     /**
@@ -38,5 +44,9 @@ class Kernel extends ConsoleKernel
         $this->load(__DIR__.'/Commands');
 
         require base_path('routes/console.php');
+    }
+
+    public function delelteUnsuccessfullOrders() {
+
     }
 }

@@ -18,4 +18,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::post('/checkData', 'API\CheckDataController@check')->name('check');
-
+Route::post('/changeType', 'API\CheckDataController@change') -> name('change');

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/beverlee.store.iml" filepath="$PROJECT_DIR$/.idea/beverlee.store.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../store.indigo24.site/.idea/store.indigo24.site.iml" filepath="$PROJECT_DIR$/../store.indigo24.site/.idea/store.indigo24.site.iml" />
     </modules>
   </component>
 </project>
