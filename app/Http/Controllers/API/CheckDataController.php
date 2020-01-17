@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 class CheckDataController extends Controller {
     public function check(Request $request) {
 
+
+        $token = $request -> token;
         $packet_ids = $request -> packet_ids;
 
         $item_ids = "";
@@ -27,80 +29,85 @@ class CheckDataController extends Controller {
 
         $goods = Goods::all();
         $total_products = [];
+        $newToken = md5($packet_ids.$order_id);
+        if ($newToken == $token) {
+            $payment = Payments::where('order_id', $order_id)->get();
 
+            if (count($payment) > 0) {
+                return 'You have some error with orderID';
+            } else {
+                foreach ($packets as $packet_id => $amount) {
+                    if (Packet::find($packet_id)) {
+                        for ($i = 0; $i < $amount; $i++) {
+                            $products = DB::table('packet')
+                                ->join('packet_product', 'packet.id', '=', 'packet_product.packet_id')
+                                ->join('product', 'packet_product.product_id', '=', 'product.id')
+                                ->where('packet.id', '=', $packet_id)
+                                ->get();
 
-        $payment = Payments::where('order_id', $order_id)->get();
+                            foreach ($products as $product) {
+                                array_push($total_products, $product);
+                            }
+                        }
+                    } else {
+                        return "Packet not found\n" . Packet::find($packet_id);
+                    }
+                }
 
-        if (count($payment) > 0) {
-            return 'You have some error with orderID';
-        } else {
-            foreach ($packets as $packet_id => $amount) {
-                if (Packet::find($packet_id)) {
+                foreach ($items as $item_id => $amount) {
+                    $product = Product::find($item_id);
                     for ($i = 0; $i < $amount; $i++) {
-                        $products = DB::table('packet')
-                            ->join('packet_product', 'packet.id', '=', 'packet_product.packet_id')
-                            ->join('product', 'packet_product.product_id', '=', 'product.id')
-                            ->where('packet.id', '=', $packet_id)
-                            ->get();
-
-                        foreach ($products as $product) {
-                            array_push($total_products, $product);
-                        }
+                        array_push($total_products, $product);
                     }
-                } else {
-                    return "Packet not found\n" . Packet::find($packet_id);
                 }
-            }
 
-            foreach ($items as $item_id => $amount) {
-                $product = Product::find($item_id);
-                for ($i = 0; $i < $amount; $i++) {
-                    array_push($total_products, $product);
-                }
-            }
+                foreach ($total_products as $product) {
+                    foreach ($goods as $good) {
 
-            foreach ($total_products as $product) {
-                foreach ($goods as $good) {
-
-                    if ($product->id == $good->product_id) {
-                        if (!($product->amount > 0) AND $good->total_amount > 0) { /// item used
-                            $good->total_amount--;
-                        } else if ($good->total_amount >= $product->amount) {
-                            $good->total_amount = $good->total_amount - $product->amount;
-                        } else {
-                            return "not enough goods at Store";
+                        if ($product->id == $good->product_id) {
+                            if (!($product->amount > 0) AND $good->total_amount > 0) { /// item used
+                                $good->total_amount--;
+                            } else if ($good->total_amount >= $product->amount) {
+                                $good->total_amount = $good->total_amount - $product->amount;
+                            } else {
+                                return "not enough goods at Store";
+                            }
                         }
                     }
                 }
+
+
+                foreach ($goods as $item) {
+                    $good = Goods::find($item->id);
+
+                    $good->total_amount = $item->total_amount;
+
+                    $good->save();
+                }
+
+
+                $newPayment = new Payments();
+
+                $newPayment->data = $packet_ids;
+
+                $newPayment->status = 1; // Status wait 15 min
+                $description = $this->description($packet_ids);
+                $newPayment->description = $this->subArraysToString($description, ', ');
+
+                $newPayment->created_at = Carbon::now();
+                $newPayment->updated_at = Carbon::now();
+
+                $newPayment->order_id = $order_id;
+
+                $newPayment->save();
+
+                return 'success';
             }
-
-
-            foreach ($goods as $item) {
-                $good = Goods::find($item->id);
-
-                $good->total_amount = $item->total_amount;
-
-                $good->save();
-            }
-
-
-            $newPayment = new Payments();
-
-            $newPayment->data = $packet_ids;
-
-            $newPayment->status = 1; // Status wait 15 min
-            $description = $this->description($packet_ids);
-            $newPayment->description = $this->subArraysToString($description, ', ');
-
-            $newPayment->created_at = Carbon::now();
-            $newPayment->updated_at = Carbon::now();
-
-            $newPayment->order_id = $order_id;
-
-            $newPayment->save();
-
-            return 'success';
+        } else {
+            return 'Incorrect token';
         }
+
+
     }
 
     public function change(Request $request) {
