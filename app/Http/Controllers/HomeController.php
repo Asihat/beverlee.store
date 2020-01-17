@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ReportExport;
 use App\Goods;
-use App\Packet;
 use App\Payments;
 use App\Product;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Input;
+use Maatwebsite\Excel\Facades\Excel;
+
 
 class HomeController extends Controller {
     /**
@@ -26,7 +28,7 @@ class HomeController extends Controller {
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index() {
-        $payments = Payments::all();
+        $payments = Payments::paginate(10);
 
         return view('home', ['payments' => $payments]);
     }
@@ -53,20 +55,70 @@ class HomeController extends Controller {
         $status = $request->input('status', 0);
         $start = $request->input('start', 0);
         $end = $request->input('end', 0);
+
         if (!$status) {
-            $status = array('1','2','3','4');
+
+            $payment = DB::table('payments')->select('*')
+                ->where('updated_at', '>=', $start)
+                ->where('updated_at', '<=', $end)
+                ->paginate(10);
+            return view('home',['payments' => $payment]);
         }
         if (!$start) {
             $start = '2018-01-01';
         }
-        if  (!$end) {
+        if (!$end) {
             $end = '2022-12-31';
         }
-        $payments = DB::table('payments')->select('*')->where('status', '=', $status)
-            ->where('updated_at', '>=', $start)->where('updated_at', '<=', $end)
-            ->get();
-
+        $payments = DB::table('payments')->select('*')
+            ->where('status', '=', $status)
+            ->where('updated_at', '>=', $start)
+            ->where('updated_at', '<=', $end)
+            ->paginate(10);
 
         return view('home', ['payments' => $payments]);
     }
+
+    public function report() {
+        return view('report');
+    }
+
+    public function export(Request $request) {
+        $status = $request->input('status');
+        $start = $request->input('start');
+        $end = $request->input('end');
+        return Excel::download(new ReportExport($status, $start, $end), 'payments.xlsx');
+    }
+
+    public function mark(Request $request) {
+
+//        $check = input::get('check');
+        $check = $request->get('check');
+
+//        $payment = Payments::all()->where('status','=','2');
+//        foreach ($payment as $pay) {
+//            if ($request[$pay['id']] != null) {
+//                Payments::find($pay['id'])->update(['status' => 4]);
+//            }
+//        }
+//        $check = $request->check;
+//        print_r($check);
+//        print_r($check);print_r($check);
+//        print_r($check);
+//        print_r($check);
+//        print_r($check);
+        var_dump($check);
+
+        if ($check != null) {
+                $checked = Payments::find($check)->update(['status' => 4]);
+                if ($checked != null) {
+                    return redirect()->back()->with(['status' => 'Изменено']);
+                }
+        }
+        $payments = Payments::all();
+        return view('home',['payments' => $payments]);
+
+
+    }
+
 }

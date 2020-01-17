@@ -21,3 +21,6 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/addProduct', 'HomeController@add')->name('products');
 Route::post('/add', 'HomeController@adds')->name('add');
 Route::post('/home/search', 'HomeController@search')->name('search');
+Route::get('/report','HomeController@report')->name('report');
+Route::post('/export','HomeController@export')->name('export');
+Route::post('/home/mark','HomeController@mark')->name('mark');

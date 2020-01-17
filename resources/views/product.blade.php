@@ -2,32 +2,34 @@
 
 @section('content')
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-sm-2">
+        <div>
+            <div class="menu">
 
                 <ul>
-                    <li><a href="/home">Платежи</a></li>
-                    <li><a href="/addProduct">Добавить товар</a></li>
+                    <li><a class="link" href="/home">Платежи</a></li>
+                    <li><a class="link" href="/addProduct">Добавить товар</a></li>
+                    <li><a class="link" href="/report">Отчет</a></li>
                 </ul>
 
             </div>
-            <div class="col-sm-10">
+            <div class="product">
                 @if (session('status'))
                     <div class="alert alert-success" role="alert">
                         {{ session('status') }}
                     </div>
                 @endif
-                <form method="post" action="/add">
+                <form method="post" action="/add" class="dropdown">
                     {{ csrf_field() }}
-                    <select name="product_id">
+                    <select name="product_id" class="dropdown-select">
                         @foreach ($product as $pro)
                             <option  value="{{$pro->id}}"> {{ $pro->name }} </option>
                         @endforeach
                     </select>
                     <br>
-                    <input name="quantity" type="number"/> <br>
+                    <br>
+                    <input name="quantity" type="number" class="number"/> <br>
 
-                    <button type="submit" href="/add" class="alert-success"> Добавить</button>
+                    <button type="submit" href="/add" class="add"> Добавить</button>
 
                 </form>
 
