@@ -28,7 +28,7 @@ class HomeController extends Controller {
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index() {
-        $payments = Payments::paginate(10);
+        $payments = Payments::orderBy('updated_at','desc')->paginate(10);
 
         return view('home', ['payments' => $payments]);
     }
@@ -91,34 +91,15 @@ class HomeController extends Controller {
     }
 
     public function mark(Request $request) {
-
-//        $check = input::get('check');
-        $check = $request->get('check');
-
-//        $payment = Payments::all()->where('status','=','2');
-//        foreach ($payment as $pay) {
-//            if ($request[$pay['id']] != null) {
-//                Payments::find($pay['id'])->update(['status' => 4]);
-//            }
-//        }
-//        $check = $request->check;
-//        print_r($check);
-//        print_r($check);print_r($check);
-//        print_r($check);
-//        print_r($check);
-//        print_r($check);
-        var_dump($check);
-
+        $check = $request->input('check');
         if ($check != null) {
-                $checked = Payments::find($check)->update(['status' => 4]);
-                if ($checked != null) {
-                    return redirect()->back()->with(['status' => 'Изменено']);
+                $checked = DB::table('payments')->whereIn('id',$check)->update(['status'=>4]);
+                                if ($checked != null) {
+                    return redirect()->back()->with(['status' => 'Отмечен как отправлено']);
                 }
         }
-        $payments = Payments::all();
+        $payments = Payments::paginate(10);
         return view('home',['payments' => $payments]);
-
-
     }
 
 }

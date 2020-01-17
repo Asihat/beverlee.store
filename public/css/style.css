@@ -32,6 +32,7 @@
 
 .content {
     margin-left: 20px;
+    width: 50%;
 }
 
 .header {
@@ -71,7 +72,15 @@
     position: relative;
     top: 1px;
 }
+.page {
+    text-align: center;
+}
 
+.payments {
+    margin: 10px;
+    margin-left: 220px;
+    margin-top: 20px;
+}
 
 .mark {
     box-shadow: 0px 1px 0px 0px #fff6af;

@@ -44,64 +44,72 @@
                         <br>
                         <button type="submit" class="search">Поиск</button>
                     </form>
-
-                    <form method="post" action="/home/mark" style="float: right;">
-                        {{ csrf_field() }}
-                        <button id="btnClick" type="submit" class="mark">Отметить как отправлен</button>
-                    </form>
-
-                    <table class="table" id="tblPosts">
-                        <thead>
-                        <tr>
-                            <th scope="col">id</th>
-                            <th scope="col">Описание товара</th>
-                            <th scope="col">Статус</th>
-                            <th scope="col">Дата</th>
-                            <th scope="col">Отметка</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        @foreach($payments as $payment)
-                            <tr>
-                                <td>{{$loop->index+1}}</td>
-                                <td>{{ $payment->description }}</td>
-
-                                @switch($payment->status)
-                                    @case('1')
-                                    <td> Новая</td>
-                                    @break
-
-                                    @case('2')
-                                    <td> Предоплата Оплачен</td>
-                                    @break
-
-                                    @case('3')
-                                    <td>Польностью оплачен</td>
-                                    @break
-
-                                    @case('4')
-                                    <td>Отправлен</td>
-                                    @break
-
-                                    @default
-                                    <td></td>
-                                    @break
-                                @endswitch
-
-                                <td>{{ $payment->updated_at }}</td>
-
-                                <td> @if ($payment->status == 2)
-                                        <input type="checkbox" name="check[]" value="{{ $payment->id }}">
-                                     @endif
-                                </td>
-
-                            </tr>
-                        @endforeach
-                        </tbody>
-                    </table>
-                    {{$payments->links()}}
                 </div>
             </div>
+
+<div class="payments">
+    <form method="post" action="/home/mark">
+        {{ csrf_field() }}
+        <button id="btnClick" type="submit" class="mark">Отметить как отправлен</button>
+        <table class="table" id="tblPosts">
+            <thead>
+            <tr>
+                <th scope="col">id</th>
+                <th scope="col">Описание товара</th>
+                <th scope="col">Статус</th>
+                <th scope="col">Дата</th>
+                <th scope="col">Отметка</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            @foreach($payments as $payment)
+                <tr>
+                    <td>{{$loop->index+1}}</td>
+                    <td>{{ $payment->description }}</td>
+
+                    @switch($payment->status)
+                        @case('1')
+                        <td> Новая</td>
+                        @break
+
+                        @case('2')
+                        <td> Предоплата Оплачен</td>
+                        @break
+
+                        @case('3')
+                        <td>Польностью оплачен</td>
+                        @break
+
+                        @case('4')
+                        <td>Отправлен</td>
+                        @break
+
+                        @default
+                        <td></td>
+                        @break
+                    @endswitch
+
+                    <td>{{ $payment->updated_at }}</td>
+
+                    <td> @if ($payment->status == 2)
+                            <input type="checkbox" name="check[]" value="{{ $payment->id }}">
+                        @endif
+                    </td>
+
+                </tr>
+            @endforeach
+
+            </tbody>
+
+        </table>
+    </form>
+
+</div>
         </div>
-    </div>
+</div>
+
+    <div class="page"> {{$payments->links()}}</div>
+{{--        </div>--}}
+{{--    </div>--}}
 @endsection
