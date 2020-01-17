@@ -2,9 +2,13 @@
 
 namespace App\Console;
 
+use App\Goods;
+use App\Packet;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+
 class Kernel extends ConsoleKernel
 {
     /**
@@ -22,18 +26,11 @@ class Kernel extends ConsoleKernel
      * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
-    protected function schedule(Schedule $schedule)
-    {
-        // $schedule->command('inspire')
-        //          ->hourly();
-//        $schedule->call(function () {
-//            DB::table('payments')
-//                -> where('updated_at', '<', Carbon::now()->)
-//                ->delete();
-//
-//        })->everyMinute()();
-    }
+    protected function schedule(Schedule $schedule) {
 
+        $schedule->call('App\Http\Controllers\API\CheckDataController@test') -> everyMinute();
+
+    }
     /**
      * Register the commands for the application.
      *
