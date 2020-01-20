@@ -22,7 +22,7 @@ class ReportExport implements FromCollection, WithHeadings {
 
     public function collection() {
 
-        return Payments::select('data','status','description','updated_at')
+        return Payments::select('description','status','updated_at')
             ->where('status', '=', $this->_status)
             ->where('updated_at', '>=', $this->_start)
             ->where('updated_at','<=', $this->_end)
@@ -37,7 +37,6 @@ class ReportExport implements FromCollection, WithHeadings {
         return [
             'Название товара',
             'Статус',
-            'Описание',
             'Дата'
         ];
     }

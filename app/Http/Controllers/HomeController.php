@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\ReportExport;
 use App\Goods;
+use App\Logging_goods;
 use App\Payments;
 use App\Product;
 use Illuminate\Http\Request;
@@ -48,6 +49,14 @@ class HomeController extends Controller {
 
         Goods::where('product_id', $id)->update(['total_amount' => $newAmount]);
 
+        $logging_good = new Logging_goods();
+
+        $logging_good -> product_id = $id;
+        $logging_good -> added_goods = $quantity;
+        $logging_good -> description = "added goods";
+
+        $logging_good -> save();
+
         return redirect()->back()->with(['status' => 'Товар добавлен']);
     }
 
@@ -57,7 +66,6 @@ class HomeController extends Controller {
         $end = $request->input('end', 0);
 
         if (!$status) {
-
             $payment = DB::table('payments')->select('*')
                 ->where('updated_at', '>=', $start)
                 ->where('updated_at', '<=', $end)
@@ -101,5 +109,7 @@ class HomeController extends Controller {
         $payments = Payments::paginate(10);
         return view('home',['payments' => $payments]);
     }
-
+    public function newDesign() {
+        return view('newDesign');
+    }
 }

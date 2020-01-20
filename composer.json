@@ -13,11 +13,8 @@
         "fideloper/proxy": "^4.0",
         "laravel/framework": "5.8.*",
         "laravel/tinker": "^1.0",
-<<<<<<< HEAD
-        "maatwebsite/excel": "^3.1"
-=======
-      "ext-intl": "*"
->>>>>>> 875a17bf52e0569696c1985da35f4c645e537216
+        "maatwebsite/excel": "^3.1",
+        "ext-intl": "*"
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.0",

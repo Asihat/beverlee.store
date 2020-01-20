@@ -130,7 +130,7 @@ class CheckDataController extends Controller {
 
     public function test() {
         $sql = <<<SQL
-    SELECT * FROM `payments` WHERE TIMESTAMPDIFF(MINUTE,created_at,NOW()) > 1
+    SELECT * FROM `payments` WHERE TIMESTAMPDIFF(MINUTE,created_at,NOW()) > 20 AND status = 1
 SQL;
         $goods = Goods::all();
 
@@ -183,12 +183,12 @@ SQL;
             }
         }
 
-        // Delete unactive payments
+        // Update unactive payments
         $sql = <<<SQL
-    DELETE FROM `payments` WHERE TIMESTAMPDIFF(MINUTE,created_at,NOW()) > 1 AND status = 1
+    UPDATE `payments` SET status = 4 WHERE TIMESTAMPDIFF(MINUTE,created_at,NOW()) > 20 AND status = 1
 SQL;
-        $notActivePayments = DB::delete($sql);
-        return "Successfully deleted not active payments\n";
+        $notActivePayments = DB::update($sql);
+        return "Successfully updated not active payments\n";
     }
 
     public function packets_string_to_array($packet_ids) {

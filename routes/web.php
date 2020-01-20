@@ -24,3 +24,12 @@ Route::post('/home/search', 'HomeController@search')->name('search');
 Route::get('/report','HomeController@report')->name('report');
 Route::post('/export','HomeController@export')->name('export');
 Route::post('/home/mark','HomeController@mark')->name('mark');
+
+
+Route::get('/newdesign','HomeController@newDesign')->name('newDesign');
+Route::get('/packets','PacketController@index')->name('packets');
+Route::get('/addpacket','PacketController@addpacket')->name('packet.store');
+Route::post('/addpacket','PacketController@addpackets')->name('packet.store');
+
+Route::get('/products','ProductController@index')->name('products');
+
