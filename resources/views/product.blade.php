@@ -3,15 +3,6 @@
 @section('content')
     <div class="container">
         <div>
-            <div class="menu">
-
-                <ul>
-                    <li><a class="link" href="/home">Платежи</a></li>
-                    <li><a class="link" href="/addProduct">Добавить товар</a></li>
-                    <li><a class="link" href="/report">Отчет</a></li>
-                </ul>
-
-            </div>
             <div class="product">
                 @if (session('status'))
                     <div class="alert alert-success" role="alert">

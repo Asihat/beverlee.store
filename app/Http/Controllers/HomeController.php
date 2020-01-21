@@ -29,6 +29,7 @@ class HomeController extends Controller {
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index() {
+        $this->middleware('auth');
         $payments = Payments::orderBy('updated_at','desc')->paginate(10);
 
         return view('home', ['payments' => $payments]);
@@ -111,5 +112,17 @@ class HomeController extends Controller {
     }
     public function newDesign() {
         return view('newDesign');
+    }
+
+    public function allProducts() {
+
+        $goods = Goods::all();
+        foreach ($goods as $good) {
+            $product = Product::find($good -> product_id);
+            $product_name = $product -> name;
+            $good -> name = $product_name;
+        }
+
+        return view('pages.all_products', ['goods' => $goods]);
     }
 }

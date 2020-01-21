@@ -27,9 +27,16 @@ Route::post('/home/mark','HomeController@mark')->name('mark');
 
 
 Route::get('/newdesign','HomeController@newDesign')->name('newDesign');
+
 Route::get('/packets','PacketController@index')->name('packets');
 Route::get('/addpacket','PacketController@addpacket')->name('packet.store');
 Route::post('/addpacket','PacketController@addpackets')->name('packet.store');
 
 Route::get('/products','ProductController@index')->name('products');
+Route::get('/addproduct','ProductController@addProduct')->name('product.store.get');
+Route::post('/addproduct','ProductController@addProducts')->name('product.store.post');
+
+Route::get('/all_products','HomeController@allProducts')->name('allProducts');
+
+
 

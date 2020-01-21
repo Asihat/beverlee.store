@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Packet;
 use App\PacketProduct;
+use App\Product;
 use Illuminate\Http\Request;
 
 class PacketController extends Controller
@@ -15,7 +16,10 @@ class PacketController extends Controller
     }
 
     public function addpacket() {
-        return view('pages.add_packet');
+
+        $products = Product::all();
+
+        return view('pages.add_packet', ['products' => $products]);
     }
     public function addpackets(Request $request) {
 
@@ -26,16 +30,18 @@ class PacketController extends Controller
 
         $newPacket -> save();
 
-        $packet_ids = $request -> input('product_ids');
-        $myArray = explode(',', $packet_ids);
+        $packet_products = PacketProduct::all();
 
-        foreach ($myArray as $item) {
-            $new_packet_product = new PacketProduct();
-            $new_packet_product -> packet_id = $newPacket -> id;
-            $new_packet_product -> product_id = $item;
-            $new_packet_product -> amount = 3;
+        for($i=0;$i<count($packet_products);$i++) {
+            if($request -> input('packet' . $i)) {
+                $newPacketProduct = new PacketProduct();
 
-            $new_packet_product -> save();
+                $newPacketProduct -> packet_id = $newPacket ->id;
+                $newPacketProduct -> product_id = $i;
+                $newPacketProduct -> amount = $request-> input('packet' . $i);
+
+                $newPacketProduct -> save();
+            }
         }
 
         return redirect('/packets');

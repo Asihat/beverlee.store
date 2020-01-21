@@ -13,4 +13,19 @@ class ProductController extends Controller
 
         return view('pages.products', ['products' => $products]);
     }
+
+    public function addProduct() {
+        return view('pages.add_product');
+    }
+
+    public function addProducts(Request $request) {
+        $newProduct = new Product();
+
+        $newProduct -> name = $request -> input('name');
+        $newProduct -> description = $request -> input('description');
+
+        $newProduct -> save();
+
+        return redirect('/products');
+    }
 }
