@@ -13,12 +13,17 @@ use Illuminate\Support\Facades\Input;
 use Maatwebsite\Excel\Facades\Excel;
 
 
+
 class HomeController extends Controller {
     /**
      * Create a new controller instance.
      *
      * @return void
      */
+    protected $status;
+    protected $start;
+    protected $end;
+
     public function __construct() {
         $this->middleware('auth');
     }
@@ -29,9 +34,7 @@ class HomeController extends Controller {
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index() {
-        $this->middleware('auth');
-        $payments = Payments::orderBy('updated_at','desc')->paginate(10);
-
+        $payments = Payments::orderBy('updated_at','desc')->paginate(20);
         return view('home', ['payments' => $payments]);
     }
 
@@ -65,27 +68,39 @@ class HomeController extends Controller {
         $status = $request->input('status', 0);
         $start = $request->input('start', 0);
         $end = $request->input('end', 0);
-
-        if (!$status) {
-            $payment = DB::table('payments')->select('*')
-                ->where('updated_at', '>=', $start)
-                ->where('updated_at', '<=', $end)
-                ->paginate(10);
-            return view('home',['payments' => $payment]);
+        $search = $request->input('search');
+        if ($search) {
+            if (!$status && !$start && !$end) {
+                return redirect()->back()->with(['search' => 'Выберите хотя бы один параметр']);
+            }
         }
+
         if (!$start) {
             $start = '2018-01-01';
         }
         if (!$end) {
             $end = '2022-12-31';
         }
+
+        if (!$status) {
+            $payments = DB::table('payments')->select('*')
+                ->whereBetween('updated_at', [$start,$end])
+                ->paginate(20);
+            $request->session()->put('status', null);
+            return view('home', ['payments' => $payments])->with(['export'=>'export']);
+        }
+
+
+        $request->session()->put('status', $status);
+        $request->session()->put('start', $start);
+        $request->session()->put('end', $end);
         $payments = DB::table('payments')->select('*')
             ->where('status', '=', $status)
             ->where('updated_at', '>=', $start)
             ->where('updated_at', '<=', $end)
-            ->paginate(10);
+            ->paginate(20);
 
-        return view('home', ['payments' => $payments]);
+        return view('home', ['payments' => $payments])->with(['export'=>'export']);
     }
 
     public function report() {
@@ -93,9 +108,10 @@ class HomeController extends Controller {
     }
 
     public function export(Request $request) {
-        $status = $request->input('status');
-        $start = $request->input('start');
-        $end = $request->input('end');
+
+        $status =  $request->session()->pull('status', 'default');
+        $start =  $request->session()->pull('start', 'default');
+        $end =  $request->session()->pull('end', 'default');
         return Excel::download(new ReportExport($status, $start, $end), 'payments.xlsx');
     }
 

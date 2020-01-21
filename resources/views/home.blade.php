@@ -2,15 +2,15 @@
 
 @section('content')
     <div class="content">
-        @if (session('status'))
-            <div class="alert alert-success" role="alert">
-                {{ session('status') }}
-            </div>
-        @endif
         <h1 class="header">Платежи</h1>
         <div>
-            <form method="post" action="/home/search">
-                {{ csrf_field() }}
+            @if (session('search'))
+                <div class="alert-danger">
+                    {{session('search')}}
+                </div>
+            @endif
+
+            <form method="get" action="/home/search">
                 <label>Статус: </label>
                 <div class="dropdown">
                     <select name="status" class="dropdown-select">
@@ -28,10 +28,18 @@
                 <label>Конец: </label><br>
                 <input type="date" class="form-control" class="mydate" name="end" placeholder="Дата">
                 <br>
-                <button type="submit" class="search">Поиск</button>
+                <button type="submit" name="search" class="search" value="search">Поиск</button>
             </form>
-        </div>
 
+        </div>
+        @if (isset($export))
+            <div>
+                <form method="post" action="/export" class="dropdown">
+                    {{ csrf_field() }}
+                    <button type="submit" class="export">Экспорт в Excel</button>
+                </form>
+            </div>
+        @endif
         <div class="payments">
             <form method="post" action="/home/mark">
                 {{ csrf_field() }}
@@ -86,7 +94,14 @@
                     @endforeach
                     </tbody>
                 </table>
+
             </form>
+            @if (session('status'))
+                {{$payments->appends(array("status" => Session::get('status'), "start" => Session::get('start'),"end" => Session::get('end')  ))->links()}}
+            @else
+                {{$payments->links()}}
+
+            @endif
         </div>
     </div>
 @endsection
