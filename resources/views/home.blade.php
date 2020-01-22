@@ -10,6 +10,17 @@
                 </div>
             @endif
 
+                @if (session('mark'))
+                    <div class="alert-success">
+                        {{session('mark')}}
+                    </div>
+                @endif
+                @if (session('mark-error'))
+                    <div class="alert-danger">
+                        {{session('mark-error')}}
+                    </div>
+                @endif
+
             <form method="get" action="/home/search">
                 <label>Статус: </label>
                 <div class="dropdown">

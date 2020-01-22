@@ -135,9 +135,9 @@ class HomeController extends Controller {
 
     public function export(Request $request) {
 
-        $status =  $request->session()->pull('status', 'default');
-        $start =  $request->session()->pull('start', 'default');
-        $end =  $request->session()->pull('end', 'default');
+        $status =  $request->session()->get('status', 'default');
+        $start =  $request->session()->get('start', 'default');
+        $end =  $request->session()->get('end', 'default');
 
         return Excel::download(new ReportExport($status, $start, $end), 'payments.xlsx');
     }
@@ -147,11 +147,13 @@ class HomeController extends Controller {
         if ($check != null) {
                 $checked = DB::table('payments')->whereIn('id',$check)->update(['status'=>4]);
                                 if ($checked != null) {
-                    return redirect()->back()->with(['status' => 'Отмечен как отправлено']);
+                    return redirect()->back()->with(['mark' => 'Отмечен как отправлено']);
                 }
+        } else {
+            return redirect()->back()->with(['mark-error' => 'Отметите хотя бы один платеж']);
         }
-        $payments = Payments::paginate(10);
-        return view('home',['payments' => $payments]);
+//        $payments = Payments::paginate(20);
+
     }
     public function newDesign() {
         return view('newDesign');
