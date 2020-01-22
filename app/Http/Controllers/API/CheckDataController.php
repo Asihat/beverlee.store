@@ -17,6 +17,7 @@ class CheckDataController extends Controller {
 
 
         $token = $request -> token;
+//        dd($token);
         $packet_ids = $request -> packet_ids;
 
         $item_ids = "";
@@ -29,8 +30,10 @@ class CheckDataController extends Controller {
 
         $goods = Goods::all();
         $total_products = [];
-        $newToken = md5($packet_ids.$order_id);
-        if ($newToken == $token) {
+
+        $newToken = DB::table("tokens")->where('token','=',$token)->first();
+//        dd($newToken->token);
+        if ($newToken) {
             $payment = Payments::where('order_id', $order_id)->get();
 
             if (count($payment) > 0) {
@@ -104,7 +107,7 @@ class CheckDataController extends Controller {
                 return 'success';
             }
         } else {
-            return 'Incorrect token';
+            return $newToken;
         }
 
 

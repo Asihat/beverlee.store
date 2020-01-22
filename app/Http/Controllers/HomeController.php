@@ -89,6 +89,8 @@ class HomeController extends Controller {
                 ->whereBetween('updated_at', [$start,$end])
                 ->paginate(20);
             $request->session()->put('status', null);
+            $request->session()->put('start', $start);
+            $request->session()->put('end', $end);
             return view('home', ['payments' => $payments])->with(['export'=>'export']);
         }
 
