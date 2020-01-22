@@ -11,9 +11,7 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', 'HomeController@index');
 
 Auth::routes();
 
@@ -24,6 +22,7 @@ Route::get('/home/search', 'HomeController@search')->name('search');
 Route::get('/report','HomeController@report')->name('report');
 Route::post('/export','HomeController@export')->name('export');
 Route::post('/home/mark','HomeController@mark')->name('mark');
+
 //Route::match(['get','post'], '/home/search',[
 //    'as' => 'search',
 //    'uses' => 'HomeController@search'

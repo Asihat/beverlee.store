@@ -9,6 +9,10 @@ use Illuminate\Http\Request;
 
 class PacketController extends Controller
 {
+    public function __construct() {
+        $this->middleware('auth');
+    }
+
     public function index() {
         $packets = Packet::all();
 
@@ -22,6 +26,11 @@ class PacketController extends Controller
         return view('pages.add_packet', ['products' => $products]);
     }
     public function addpackets(Request $request) {
+
+        $request->validate([
+            'name' => 'required',
+            'description' => 'required',
+        ]);
 
         $newPacket = new Packet();
 

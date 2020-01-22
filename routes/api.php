@@ -17,6 +17,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/checkData', 'API\CheckDataController@check')->name('check');
-Route::post('/changeType', 'API\CheckDataController@change') -> name('change');
+Route::post('/checkdata', 'API\CheckDataController@check')->name('check');
+Route::post('/changetype', 'API\CheckDataController@change') -> name('change');
 Route::get('/test', 'API\CheckDataController@test') -> name('test');

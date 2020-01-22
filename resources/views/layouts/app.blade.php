@@ -14,14 +14,13 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
             integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
             crossorigin="anonymous"></script>
-<!-- Fonts -->
+    <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-{{--    <link href="{{ asset('css/style.css') }}" rel="stylesheet">--}}
-<!-- Include Date Range Picker -->
+    <!-- Include Date Range Picker -->
     <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
     <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css"/>
     <!-- Our Custom CSS -->
@@ -35,31 +34,52 @@
         <!-- Sidebar Holder -->
         <nav id="sidebar">
             <div class="sidebar-header">
-                <h3>Beverlee Store indigo24</h3>
+                <div class="logo">
+                    <img src="{{ asset('/images/logo.png') }}" alt="">
+                </div>
+                <h3>Store indigo24</h3>
             </div>
 
             <ul class="list-unstyled components">
                 <p>Категории</p>
                 <li><a class="link" href="/home">Платежи</a></li>
-                <li><a class="link" href="/all_products">Обшие товары</a></li>
-                <li><a class="link" href="/packets">Пакеты</a></li>
-                <li><a class="link" href="/products">Товары</a></li>
-                <li><a class="link" href="/report">Отчет</a></li>
+                <li></li>
+                <li><a class="link" href="/all_products">Остаток товаров</a></li>
+                <li><a class="link" href="/packets">Список пакетов</a></li>
+                <li><a class="link" href="/products">Список товаров</a></li>
             </ul>
 
-        </nav>
+            <ul class="nav navbar-nav ml-auto">
+                <li class="nav-item active">
+                    @if (Auth::check())
+                        <a class="nav-link" href="#">{{ Auth::user()->name }}</a>
+                    @endif
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('logout') }}"
+                       onclick="event.preventDefault();
+                                                     document.getElementById('logout-form').submit();">
+                        {{ __('Logout') }}
+                    </a>
 
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                          style="display: none;">
+                        @csrf
+                    </form>
+
+                </li>
+            </ul>
+        </nav>
         <!-- Page Content Holder -->
         <div id="content">
-
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
-
                     <button type="button" id="sidebarCollapse" class="navbar-btn">
                         <span></span>
                         <span></span>
                         <span></span>
                     </button>
+
                     <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse"
                             data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                             aria-expanded="false" aria-label="Toggle navigation">
@@ -67,26 +87,7 @@
                     </button>
 
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="nav navbar-nav ml-auto">
-                            <li class="nav-item active">
-                                @if (Auth::check())
-                                    <a class="nav-link" href="#">{{ Auth::user()->name }}</a>
-                                @endif
-                            </li>
-                            <li class="nav-item">
-                                <a class="dropdown-item" href="{{ route('logout') }}"
-                                   onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                    {{ __('Logout') }}
-                                </a>
 
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST"
-                                      style="display: none;">
-                                    @csrf
-                                </form>
-
-                            </li>
-                        </ul>
                     </div>
                 </div>
             </nav>

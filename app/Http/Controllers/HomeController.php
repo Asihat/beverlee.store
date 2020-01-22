@@ -45,10 +45,17 @@ class HomeController extends Controller {
     }
 
     public function adds(Request $request) {
+
+        $request -> validate([
+            'product_id' => 'required',
+            'quantity' => 'required',
+        ]);
+
         $id = $request->input('product_id');
         $quantity = $request->input('quantity');
 
         $goods = Goods::where('product_id', $id)->first();
+
         $newAmount = $goods['total_amount'] + $quantity;
 
         Goods::where('product_id', $id)->update(['total_amount' => $newAmount]);
@@ -81,15 +88,15 @@ class HomeController extends Controller {
         if (!$end) {
             $end = '2022-12-31';
         }
-
         if (!$status) {
             $payments = DB::table('payments')->select('*')
                 ->whereBetween('updated_at', [$start,$end])
                 ->paginate(20);
             $request->session()->put('status', null);
+            $request->session()->put('start', $start);
+            $request->session()->put('end', $end);
             return view('home', ['payments' => $payments])->with(['export'=>'export']);
         }
-
 
         $request->session()->put('status', $status);
         $request->session()->put('start', $start);
@@ -112,6 +119,7 @@ class HomeController extends Controller {
         $status =  $request->session()->pull('status', 'default');
         $start =  $request->session()->pull('start', 'default');
         $end =  $request->session()->pull('end', 'default');
+
         return Excel::download(new ReportExport($status, $start, $end), 'payments.xlsx');
     }
 

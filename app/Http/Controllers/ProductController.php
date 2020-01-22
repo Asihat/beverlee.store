@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    public function __construct() {
+        $this->middleware('auth');
+    }
+
     public function index() {
         $products = Product::all();
 
@@ -20,6 +24,11 @@ class ProductController extends Controller
 
     public function addProducts(Request $request) {
         $newProduct = new Product();
+
+        $request -> validate([
+            'name' => 'required',
+            'description' => 'required',
+        ]);
 
         $newProduct -> name = $request -> input('name');
         $newProduct -> description = $request -> input('description');
