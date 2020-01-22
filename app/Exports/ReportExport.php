@@ -21,7 +21,7 @@ class ReportExport implements FromCollection, WithHeadings {
     }
 
     public function collection() {
-        if ($this->_status == null){
+        if (!$this->_status){
 
             return Payments::select('description','status','updated_at')
                 ->where('updated_at', '>=', $this->_start)
