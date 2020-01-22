@@ -21,6 +21,7 @@ Route::post('/add', 'HomeController@adds')->name('add');
 Route::get('/home/search', 'HomeController@search')->name('search');
 Route::get('/report','HomeController@report')->name('report');
 Route::post('/export','HomeController@export')->name('export');
+Route::post('/exportDefault','HomeController@exportDefault')->name('exportDefault');
 Route::post('/home/mark','HomeController@mark')->name('mark');
 
 //Route::match(['get','post'], '/home/search',[

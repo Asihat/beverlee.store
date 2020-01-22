@@ -50,6 +50,13 @@
                     <button type="submit" class="export">Экспорт в Excel</button>
                 </form>
             </div>
+        @else
+            <div>
+                <form method="post" action="/exportDefault" class="dropdown">
+                    {{ csrf_field() }}
+                    <button type="submit" class="export">Экспорт в Excel</button>
+                </form>
+            </div>
         @endif
         <div class="payments">
             <form method="post" action="/home/mark">

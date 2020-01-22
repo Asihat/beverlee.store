@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ReportExport;
+use App\Exports\DefaultExport;
 use App\Goods;
 use App\Logging_goods;
 use App\Payments;
@@ -141,6 +142,17 @@ class HomeController extends Controller {
 
         return Excel::download(new ReportExport($status, $start, $end), 'payments.xlsx');
     }
+
+    public function exportDefault(Request $request) {
+
+//        $status =  $request->session()->get('status', 'default');
+//        $start =  $request->session()->get('start', 'default');
+//        $end =  $request->session()->get('end', 'default');
+
+        return Excel::download(new DefaultExport(), 'payments.xlsx');
+    }
+
+
 
     public function mark(Request $request) {
         $check = $request->input('check');
