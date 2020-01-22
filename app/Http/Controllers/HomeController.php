@@ -55,20 +55,39 @@ class HomeController extends Controller {
         $quantity = $request->input('quantity');
 
         $goods = Goods::where('product_id', $id)->first();
+        if ($goods) {
+            $newAmount = $goods['total_amount'] + $quantity;
 
-        $newAmount = $goods['total_amount'] + $quantity;
+            Goods::where('product_id', $id)->update(['total_amount' => $newAmount]);
 
-        Goods::where('product_id', $id)->update(['total_amount' => $newAmount]);
+            $logging_good = new Logging_goods();
 
-        $logging_good = new Logging_goods();
+            $logging_good -> product_id = $id;
+            $logging_good -> added_goods = $quantity;
+            $logging_good -> description = "added goods";
 
-        $logging_good -> product_id = $id;
-        $logging_good -> added_goods = $quantity;
-        $logging_good -> description = "added goods";
+            $logging_good -> save();
 
-        $logging_good -> save();
+            return redirect()->back()->with(['status' => 'Товар добавлен']);
+        } else {
+            $good = Product::find($id);
 
-        return redirect()->back()->with(['status' => 'Товар добавлен']);
+            $newGood = new Goods;
+            $newGood -> product_id = $id;
+            $newGood -> total_amount = $quantity;
+            $newGood -> save();
+
+            $logging_good = new Logging_goods();
+
+            $logging_good -> product_id = $id;
+            $logging_good -> added_goods = $quantity;
+            $logging_good -> description = "added goods";
+
+            $logging_good -> save();
+            return redirect()->back()->with(['status' => 'Товар добавлен']);
+
+        }
+
     }
 
     public function search(Request $request) {
