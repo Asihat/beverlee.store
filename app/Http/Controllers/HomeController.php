@@ -28,7 +28,6 @@ class HomeController extends Controller {
         $this->middleware('auth');
     }
 
-
     /**
      * Show the application dashboard.
      *
@@ -36,7 +35,6 @@ class HomeController extends Controller {
      */
     public function index() {
         $payments = Payments::orderBy('updated_at','desc')->paginate(20);
-
         return view('home', ['payments' => $payments]);
     }
 
@@ -47,10 +45,17 @@ class HomeController extends Controller {
     }
 
     public function adds(Request $request) {
+
+        $request -> validate([
+            'product_id' => 'required',
+            'quantity' => 'required',
+        ]);
+
         $id = $request->input('product_id');
         $quantity = $request->input('quantity');
 
         $goods = Goods::where('product_id', $id)->first();
+
         $newAmount = $goods['total_amount'] + $quantity;
 
         Goods::where('product_id', $id)->update(['total_amount' => $newAmount]);
@@ -83,7 +88,6 @@ class HomeController extends Controller {
         if (!$end) {
             $end = '2022-12-31';
         }
-
         if (!$status) {
             $payments = DB::table('payments')->select('*')
                 ->whereBetween('updated_at', [$start,$end])
@@ -93,7 +97,6 @@ class HomeController extends Controller {
             $request->session()->put('end', $end);
             return view('home', ['payments' => $payments])->with(['export'=>'export']);
         }
-
 
         $request->session()->put('status', $status);
         $request->session()->put('start', $start);
@@ -116,6 +119,7 @@ class HomeController extends Controller {
         $status =  $request->session()->pull('status', 'default');
         $start =  $request->session()->pull('start', 'default');
         $end =  $request->session()->pull('end', 'default');
+
         return Excel::download(new ReportExport($status, $start, $end), 'payments.xlsx');
     }
 
@@ -132,5 +136,17 @@ class HomeController extends Controller {
     }
     public function newDesign() {
         return view('newDesign');
+    }
+
+    public function allProducts() {
+
+        $goods = Goods::all();
+        foreach ($goods as $good) {
+            $product = Product::find($good -> product_id);
+            $product_name = $product -> name;
+            $good -> name = $product_name;
+        }
+
+        return view('pages.all_products', ['goods' => $goods]);
     }
 }

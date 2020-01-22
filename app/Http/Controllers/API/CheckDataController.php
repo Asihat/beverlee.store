@@ -14,14 +14,22 @@ use Illuminate\Support\Facades\DB;
 
 class CheckDataController extends Controller {
     public function check(Request $request) {
-
-
-        $token = $request -> token;
-//        dd($token);
-        $packet_ids = $request -> packet_ids;
+        $token = $request->token;
+        $packet_ids = $request->packet_ids;
+        $result = [];
+        if(!$token) {
+            $result['error'] = "Token error. Token required";
+            $result['success'] = false;
+            return response() -> json($result);
+        }
+        if(!$packet_ids) {
+            $result['error'] = "Packet Ids required";
+            $result['success'] = false;
+            return response() -> json($result);
+        }
 
         $item_ids = "";
-
+        // 1=>1,2=>1,3=>3,3=>12
         $packets = $this->packets_string_to_array($packet_ids);
 
         $items = $this->items_string_to_array($item_ids);
@@ -30,14 +38,15 @@ class CheckDataController extends Controller {
 
         $goods = Goods::all();
         $total_products = [];
+        $newToken = md5($packet_ids . $order_id);
 
-        $newToken = DB::table("tokens")->where('token','=',$token)->first();
-//        dd($newToken->token);
-        if ($newToken) {
+        if ($newToken == $token) {
             $payment = Payments::where('order_id', $order_id)->get();
 
             if (count($payment) > 0) {
-                return 'You have some error with orderID';
+                $result['error'] = "You have some error with orderID";
+                $result['success'] = false;
+                return response() -> json($result);
             } else {
                 foreach ($packets as $packet_id => $amount) {
                     if (Packet::find($packet_id)) {
@@ -53,14 +62,9 @@ class CheckDataController extends Controller {
                             }
                         }
                     } else {
-                        return "Packet not found\n" . Packet::find($packet_id);
-                    }
-                }
-
-                foreach ($items as $item_id => $amount) {
-                    $product = Product::find($item_id);
-                    for ($i = 0; $i < $amount; $i++) {
-                        array_push($total_products, $product);
+                        $result['error'] = "Packet not found\n" . "This Packed Id not found: " . $packet_id;
+                        $result['success'] = false;
+                        return response() -> json($result);
                     }
                 }
 
@@ -73,12 +77,13 @@ class CheckDataController extends Controller {
                             } else if ($good->total_amount >= $product->amount) {
                                 $good->total_amount = $good->total_amount - $product->amount;
                             } else {
-                                return "not enough goods at Store";
+                                $result['error'] = "not enough goods at Store";
+                                $result['success'] = false;
+                                return response() -> json($result);
                             }
                         }
                     }
                 }
-
 
                 foreach ($goods as $item) {
                     $good = Goods::find($item->id);
@@ -104,10 +109,14 @@ class CheckDataController extends Controller {
 
                 $newPayment->save();
 
-                return 'success';
+                $result['error'] = "There is no error";
+                $result['success'] = true;
+                return response() -> json($result);
             }
         } else {
-            return $newToken;
+            $result['error'] = "Incorrect token";
+            $result['success'] = false;
+            return response() -> json($result);
         }
 
 
@@ -116,18 +125,25 @@ class CheckDataController extends Controller {
     public function change(Request $request) {
 
         $order_id = $request->order_id;
-        $customer_id = $request->customer_id;
+
         if ($order_id) {
             $payment = Payments::where('order_id', $order_id)->get();
             if (count($payment) > 0 and count($payment) < 2) { //
                 Payments::where('order_id', '=', $order_id)
                     ->update(['status' => 2]);
-                return 'success';
+
+                $result['error'] = "There is no error";
+                $result['success'] = true;
+                return response() -> json($result);
             } else {
-                return "There is some error with counts payment";
+                $result['error'] = "There is some error with counts payment";
+                $result['success'] = false;
+                return response() -> json($result);
             }
         } else {
-            return "No order_id";
+            $result['error'] = "No order_id";
+            $result['success'] = false;
+            return response() -> json($result);
         }
     }
 
@@ -139,13 +155,13 @@ SQL;
 
         $notActivePayments = DB::select($sql);
 
-        if(count($notActivePayments) == 0) {
+        if (count($notActivePayments) == 0) {
             return "There is no not active payments";
         }
 
         $packet = "";
         foreach ($notActivePayments as $payment) {
-            $packet = $payment -> data;
+            $packet = $payment->data;
             $packets = $this->packets_string_to_array($packet);
             $total_products = [];
             foreach ($packets as $packet_id => $amount) {
@@ -172,7 +188,7 @@ SQL;
 
                 if ($product->id == $good->product_id) {
 
-                    $good -> total_amount = $good -> total_amount + $product -> amount;
+                    $good->total_amount = $good->total_amount + $product->amount;
 
                     foreach ($goods as $item) {
                         $good = Goods::find($item->id);
@@ -228,6 +244,7 @@ SQL;
 
         return $packets;
     }
+
     public function items_string_to_array($item_ids) {
         $items = [];
 
@@ -276,6 +293,7 @@ SQL;
         $str = rtrim($str, $sep); // remove last separator
         return $str;
     }
+
     public function description($packet_id_array) {
         $desc = explode(",", $packet_id_array);
 

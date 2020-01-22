@@ -1,7 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-    <h3>Все пакеты</h3>
+    <h3>Все продукты</h3>
+    <p><a href="/addproduct">Add Product</a></p>
     <table class="table" id="tblPosts">
         <thead>
         <tr>

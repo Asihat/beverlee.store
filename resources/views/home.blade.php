@@ -58,7 +58,7 @@
 
                     @foreach($payments as $payment)
                         <tr>
-                            <td>{{$loop->index+1}}</td>
+                            <td>{{ $payment -> id }}</td>
                             <td>{{ $payment->description }}</td>
 
                             @switch($payment->status)
@@ -83,7 +83,7 @@
                                 @break
                             @endswitch
 
-                            <td>{{ $payment->updated_at }}</td>
+                            <td>{{ date("H:i:s,  d:m:Y",strtotime($payment -> created_at)) }}</td>
 
                             <td> @if ($payment->status == 2)
                                     <input type="checkbox" name="check[]" value="{{ $payment->id }}">
