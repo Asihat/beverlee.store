@@ -15,22 +15,22 @@ use Illuminate\Support\Facades\DB;
 class CheckDataController extends Controller {
     public function check(Request $request) {
         $token = $request->token;
-        $packet_ids = $request->packet_ids;
-        $result = [];
-        if(!$token) {
+        $packets = $request->packets;
+        $result['success'] = false;
+
+        if (!$token) {
             $result['error'] = "Token error. Token required";
-            $result['success'] = false;
-            return response() -> json($result);
+            return response()->json($result);
         }
-        if(!$packet_ids) {
+
+        if (!$packets) {
             $result['error'] = "Packet Ids required";
-            $result['success'] = false;
-            return response() -> json($result);
+            return response()->json($result);
         }
 
         $item_ids = "";
         // 1=>1,2=>1,3=>3,3=>12
-        $packets = $this->packets_string_to_array($packet_ids);
+        $packets = $this->packets_string_to_array($packets);
 
         $items = $this->items_string_to_array($item_ids);
 
@@ -38,15 +38,15 @@ class CheckDataController extends Controller {
 
         $goods = Goods::all();
         $total_products = [];
-        $newToken = md5($packet_ids . $order_id);
+        $newToken = md5($packets . $order_id);
 
         if ($newToken == $token) {
             $payment = Payments::where('order_id', $order_id)->get();
 
             if (count($payment) > 0) {
                 $result['error'] = "You have some error with orderID";
-                $result['success'] = false;
-                return response() -> json($result);
+
+                return response()->json($result);
             } else {
                 foreach ($packets as $packet_id => $amount) {
                     if (Packet::find($packet_id)) {
@@ -63,8 +63,7 @@ class CheckDataController extends Controller {
                         }
                     } else {
                         $result['error'] = "Packet not found\n" . "This Packed Id not found: " . $packet_id;
-                        $result['success'] = false;
-                        return response() -> json($result);
+                        return response()->json($result);
                     }
                 }
 
@@ -78,45 +77,36 @@ class CheckDataController extends Controller {
                                 $good->total_amount = $good->total_amount - $product->amount;
                             } else {
                                 $result['error'] = "not enough goods at Store";
-                                $result['success'] = false;
-                                return response() -> json($result);
+
+                                return response()->json($result);
                             }
                         }
                     }
                 }
 
                 foreach ($goods as $item) {
-                    $good = Goods::find($item->id);
-
-                    $good->total_amount = $item->total_amount;
-
-                    $good->save();
+                    Goods::where('id', $item->id)->update([
+                        'total_amount' => $item->total_amount,
+                    ]);
                 }
 
+                $description = $this->description($packets);
+                Payments::create([
+                    'created_at' => Carbon::now(),
+                    'data' => $packets,
+                    'description' => $this->subArraysToString($description, ', '),
+                    'order_id' => $order_id,
+                    'status' => 1,
+                    'updated_at' => Carbon::now(),
+                ]);
 
-                $newPayment = new Payments();
-
-                $newPayment->data = $packet_ids;
-
-                $newPayment->status = 1; // Status wait 15 min
-                $description = $this->description($packet_ids);
-                $newPayment->description = $this->subArraysToString($description, ', ');
-
-                $newPayment->created_at = Carbon::now();
-                $newPayment->updated_at = Carbon::now();
-
-                $newPayment->order_id = $order_id;
-
-                $newPayment->save();
-
-                $result['error'] = "There is no error";
                 $result['success'] = true;
-                return response() -> json($result);
+                return response()->json($result);
             }
         } else {
             $result['error'] = "Incorrect token";
-            $result['success'] = false;
-            return response() -> json($result);
+
+            return response()->json($result);
         }
 
 
@@ -125,6 +115,7 @@ class CheckDataController extends Controller {
     public function change(Request $request) {
 
         $order_id = $request->order_id;
+        $result['success'] = false;
 
         if ($order_id) {
             $payment = Payments::where('order_id', $order_id)->get();
@@ -134,16 +125,14 @@ class CheckDataController extends Controller {
 
                 $result['error'] = "There is no error";
                 $result['success'] = true;
-                return response() -> json($result);
+                return response()->json($result);
             } else {
                 $result['error'] = "There is some error with counts payment";
-                $result['success'] = false;
-                return response() -> json($result);
+                return response()->json($result);
             }
         } else {
             $result['error'] = "No order_id";
-            $result['success'] = false;
-            return response() -> json($result);
+            return response()->json($result);
         }
     }
 
@@ -191,11 +180,7 @@ SQL;
                     $good->total_amount = $good->total_amount + $product->amount;
 
                     foreach ($goods as $item) {
-                        $good = Goods::find($item->id);
-
-                        $good->total_amount = $item->total_amount;
-
-                        $good->save();
+                        Goods::where('id', $item->id)->update(['total_amount' => $item->total_amount]);
                     }
 
                 }
@@ -204,13 +189,13 @@ SQL;
 
         // Update unactive payments
         $sql = <<<SQL
-    UPDATE `payments` SET status = 4 WHERE TIMESTAMPDIFF(MINUTE,created_at,NOW()) > 20 AND status = 1
+    UPDATE `payments` SET status = 4 WHERE TIMESTAMPDIFF(MINUTE,created_at,NOW()) > 20 AND status = 1;
 SQL;
-        $notActivePayments = DB::update($sql);
+        DB::update($sql);
         return "Successfully updated not active payments\n";
     }
 
-    public function packets_string_to_array($packet_ids) {
+    public function packets_string_to_array($packets) {
         $packets = [];
 
         $packet_key = "";
@@ -218,20 +203,20 @@ SQL;
 
         $key_or_amount = "key";
 
-        for ($i = 0; $i < strlen($packet_ids); $i++) {
-            if (is_numeric($packet_ids[$i]) AND $i == strlen($packet_ids) - 1) {
-                $number = $number . $packet_ids[$i];
+        for ($i = 0; $i < strlen($packets); $i++) {
+            if (is_numeric($packets[$i]) AND $i == strlen($packets) - 1) {
+                $number = $number . $packets[$i];
 
                 $packets[$packet_key] = $number;
                 break;
-            } else if (is_numeric($packet_ids[$i]) AND $key_or_amount == "key") {
-                $packet_key = $packet_key . $packet_ids[$i];
+            } else if (is_numeric($packets[$i]) AND $key_or_amount == "key") {
+                $packet_key = $packet_key . $packets[$i];
 
-            } else if ($packet_ids[$i] == "=" || $packet_ids[$i] == ">") {
+            } else if ($packets[$i] == "=" || $packets[$i] == ">") {
                 $key_or_amount = "number";
-            } else if (is_numeric($packet_ids[$i]) AND $key_or_amount == "number") {
-                $number = $number . $packet_ids[$i];
-            } else if ($packet_ids[$i] == ",") {
+            } else if (is_numeric($packets[$i]) AND $key_or_amount == "number") {
+                $number = $number . $packets[$i];
+            } else if ($packets[$i] == ",") {
 
                 $key_or_amount = "key";
                 $packets[$packet_key] = $number;
