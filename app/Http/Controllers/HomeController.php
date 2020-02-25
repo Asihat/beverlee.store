@@ -9,10 +9,10 @@ use App\Logging_goods;
 use App\Payments;
 use App\Product;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Maatwebsite\Excel\Facades\Excel;
-
 
 
 class HomeController extends Controller {
@@ -35,7 +35,7 @@ class HomeController extends Controller {
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index() {
-        $payments = Payments::orderBy('updated_at','desc')->paginate(20);
+        $payments = Payments::orderBy('updated_at', 'desc')->paginate(20);
         return view('home', ['payments' => $payments]);
     }
 
@@ -46,8 +46,7 @@ class HomeController extends Controller {
     }
 
     public function adds(Request $request) {
-
-        $request -> validate([
+        $request->validate([
             'product_id' => 'required',
             'quantity' => 'required',
         ]);
@@ -61,34 +60,30 @@ class HomeController extends Controller {
 
             Goods::where('product_id', $id)->update(['total_amount' => $newAmount]);
 
-            $logging_good = new Logging_goods();
-
-            $logging_good -> product_id = $id;
-            $logging_good -> added_goods = $quantity;
-            $logging_good -> description = "added goods";
-
-            $logging_good -> save();
+            Logging_goods::create([
+                'product_id' => $id,
+                'added_goods' => $quantity,
+                'description' => "Товар добавлен",
+            ]);
 
             return redirect()->back()->with(['status' => 'Товар добавлен']);
+
         } else {
             $good = Product::find($id);
 
-            $newGood = new Goods;
-            $newGood -> product_id = $id;
-            $newGood -> total_amount = $quantity;
-            $newGood -> save();
+            Goods::create([
+                'product_id' => $id,
+                'total_amount' => $quantity,
+            ]);
 
-            $logging_good = new Logging_goods();
+            Logging_goods::create([
+                'product_id' => $id,
+                'added_goods' => $quantity,
+                'description' => "Товар добавлен",
+            ]);
 
-            $logging_good -> product_id = $id;
-            $logging_good -> added_goods = $quantity;
-            $logging_good -> description = "added goods";
-
-            $logging_good -> save();
             return redirect()->back()->with(['status' => 'Товар добавлен']);
-
         }
-
     }
 
     public function search(Request $request) {
@@ -110,24 +105,26 @@ class HomeController extends Controller {
         }
         if (!$status) {
             $payments = DB::table('payments')->select('*')
-                ->whereBetween('updated_at', [$start,$end])
+                ->whereBetween('updated_at', [$start, $end])
                 ->paginate(20);
             $request->session()->put('status', null);
             $request->session()->put('start', $start);
             $request->session()->put('end', $end);
-            return view('home', ['payments' => $payments])->with(['export'=>'export']);
+
+            return view('home', ['payments' => $payments])->with(['export' => 'export']);
         }
 
         $request->session()->put('status', $status);
         $request->session()->put('start', $start);
         $request->session()->put('end', $end);
+
         $payments = DB::table('payments')->select('*')
             ->where('status', '=', $status)
             ->where('updated_at', '>=', $start)
             ->where('updated_at', '<=', $end)
             ->paginate(20);
 
-        return view('home', ['payments' => $payments])->with(['export'=>'export']);
+        return view('home', ['payments' => $payments])->with(['export' => 'export']);
     }
 
     public function report() {
@@ -135,49 +132,42 @@ class HomeController extends Controller {
     }
 
     public function export(Request $request) {
-
-        $status =  $request->session()->get('status', 'default');
-        $start =  $request->session()->get('start', 'default');
-        $end =  $request->session()->get('end', 'default');
+        $status = $request->session()->get('status', 'default');
+        $start = $request->session()->get('start', 'default');
+        $end = $request->session()->get('end', 'default');
 
         return Excel::download(new ReportExport($status, $start, $end), 'payments.xlsx');
     }
 
     public function exportDefault(Request $request) {
-
-//        $status =  $request->session()->get('status', 'default');
-//        $start =  $request->session()->get('start', 'default');
-//        $end =  $request->session()->get('end', 'default');
-
         return Excel::download(new DefaultExport(), 'payments.xlsx');
     }
 
 
-
     public function mark(Request $request) {
         $check = $request->input('check');
+
         if ($check != null) {
-                $checked = DB::table('payments')->whereIn('id',$check)->update(['status'=>4]);
-                                if ($checked != null) {
-                    return redirect()->back()->with(['mark' => 'Отмечен как отправлено']);
-                }
+            $checked = DB::table('payments')->whereIn('id', $check)->update(['status' => 4]);
+            if ($checked != null) {
+                return redirect()->back()->with(['mark' => 'Отмечен как отправлено']);
+            }
         } else {
             return redirect()->back()->with(['mark-error' => 'Отметите хотя бы один платеж']);
         }
-//        $payments = Payments::paginate(20);
-
     }
+
     public function newDesign() {
         return view('newDesign');
     }
 
     public function allProducts() {
-
         $goods = Goods::all();
+
         foreach ($goods as $good) {
-            $product = Product::find($good -> product_id);
-            $product_name = $product -> name;
-            $good -> name = $product_name;
+            $product = Product::find($good->product_id);
+            $product_name = $product->name;
+            $good->name = $product_name;
         }
 
         return view('pages.all_products', ['goods' => $goods]);
