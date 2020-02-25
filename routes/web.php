@@ -39,7 +39,7 @@ Route::get('/products','ProductController@index')->name('products');
 Route::get('/addproduct','ProductController@addProduct')->name('product.store.get');
 Route::post('/addproduct','ProductController@addProducts')->name('product.store.post');
 
-Route::get('/all_products','HomeController@allProducts')->name('allProducts');
+Route::get('/allProducts','HomeController@allProducts')->name('allProducts');
 
 
 

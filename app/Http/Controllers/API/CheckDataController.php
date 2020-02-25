@@ -48,6 +48,8 @@ class CheckDataController extends Controller {
 
                 return response()->json($result);
             } else {
+                info($packets); # TODO remove
+
                 foreach ($packets as $packet_id => $amount) {
                     if (Packet::find($packet_id)) {
                         for ($i = 0; $i < $amount; $i++) {
@@ -66,7 +68,6 @@ class CheckDataController extends Controller {
                         return response()->json($result);
                     }
                 }
-
                 foreach ($total_products as $product) {
                     foreach ($goods as $good) {
 
@@ -91,6 +92,8 @@ class CheckDataController extends Controller {
                 }
 
                 $description = $this->description($packets);
+                info($description); # TODO remove
+
                 Payments::create([
                     'created_at' => Carbon::now(),
                     'data' => $packets,
@@ -119,6 +122,7 @@ class CheckDataController extends Controller {
 
         if ($order_id) {
             $payment = Payments::where('order_id', $order_id)->get();
+            info($payment); #TODO remove
             if (count($payment) > 0 and count($payment) < 2) { //
                 Payments::where('order_id', '=', $order_id)
                     ->update(['status' => 2]);
@@ -191,12 +195,13 @@ SQL;
         $sql = <<<SQL
     UPDATE `payments` SET status = 4 WHERE TIMESTAMPDIFF(MINUTE,created_at,NOW()) > 20 AND status = 1;
 SQL;
+        info($sql); # TODO remove;
         DB::update($sql);
         return "Successfully updated not active payments\n";
     }
 
     public function packets_string_to_array($packets) {
-        $packets = [];
+        $packet = [];
 
         $packet_key = "";
         $number = "";
@@ -207,19 +212,22 @@ SQL;
             if (is_numeric($packets[$i]) AND $i == strlen($packets) - 1) {
                 $number = $number . $packets[$i];
 
-                $packets[$packet_key] = $number;
+                $packet[$packet_key] = $number;
                 break;
+
             } else if (is_numeric($packets[$i]) AND $key_or_amount == "key") {
                 $packet_key = $packet_key . $packets[$i];
 
             } else if ($packets[$i] == "=" || $packets[$i] == ">") {
                 $key_or_amount = "number";
+
             } else if (is_numeric($packets[$i]) AND $key_or_amount == "number") {
                 $number = $number . $packets[$i];
+
             } else if ($packets[$i] == ",") {
 
                 $key_or_amount = "key";
-                $packets[$packet_key] = $number;
+                $packet[$packet_key] = $number;
                 $packet_key = "";
                 $number = "";
             } else {
@@ -227,7 +235,7 @@ SQL;
             }
         }
 
-        return $packets;
+        return $packet;
     }
 
     public function items_string_to_array($item_ids) {
@@ -244,17 +252,21 @@ SQL;
         for ($i = 0; $i < strlen($item_ids); $i++) {
             if (is_numeric($item_ids[$i]) AND $i == strlen($item_ids) - 1) {
                 $number = $number . $item_ids[$i];
-
                 $items[$item_key] = $number;
+
                 break;
+
             } else if (is_numeric($item_ids[$i]) AND $key_or_amount == "key") {
                 $item_key = $item_key . $item_ids[$i];
                 $length_of_key++;
+
             } else if ($item_ids[$i] == "=" || $item_ids == ">") {
                 $key_or_amount = "number";
+
             } else if (is_numeric($item_ids[$i]) AND $key_or_amount == "number") {
                 $number = $number . $item_ids[$i];
                 $length_of_number++;
+
             } else if ($item_ids[$i] == ",") {
 
                 $key_or_amount = "key";
@@ -265,7 +277,7 @@ SQL;
                 $length_of_key = 0;
             }
         }
-
+        info($items); #TODO remove;
         return $items;
     }
 
